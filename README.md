@@ -15,6 +15,8 @@ A high-performance Rust application for generating stunning mathematical visuali
 - **Config File Support**: Save and load parameter configurations
 - **Cross-platform**: Works on Windows, macOS, and Linux
 
+## [Sample video on YouTube](https://youtu.be/WQlP19UGV8U)
+
 ## 🚀 Quick Start
 
 ### Installation
