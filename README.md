@@ -21,13 +21,13 @@ A high-performance Rust application for generating stunning mathematical visuali
 
 #### Option 1: Download Pre-built Binary
 
-Download the latest release from the [Releases](https://github.com/yourusername/mathillu/releases) page.
+Download the latest release from the [Releases](https://github.com/nsh1999/mathillu/releases) page.
 
 #### Option 2: Build from Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/mathillu.git
+git clone https://github.com/nsh1999/mathillu.git
 cd mathillu
 
 # Build in release mode
@@ -202,7 +202,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ### Development Setup
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/yourusername/mathillu.git`
+2. Clone your fork: `git clone https://github.com/nsh1999/mathillu.git`
 3. Create a feature branch: `git checkout -b feature-name`
 4. Make your changes
 5. Run tests: `cargo test`
@@ -236,7 +236,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you encounter any issues or have questions:
 
-1. Check the [Issues](https://github.com/yourusername/mathillu/issues) page
+1. Check the [Issues](https://github.com/nsh1999/mathillu/issues) page
 2. Create a new issue with detailed information
 3. Include your operating system, Rust version, and command used
 
