@@ -1,0 +1,13 @@
+[package]
+name = "mathillu"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+image = "0.24"  # Or the latest version available
+clap = { version = "3.1", features = ["derive"] }
+imageproc = "0.23"
+rusttype = "0.9"
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+
