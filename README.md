@@ -9,6 +9,7 @@ A high-performance Rust application for generating stunning mathematical visuali
 
 - **Mandelbrot Set Visualization**: Generate intricate fractal images with customizable parameters
 - **Schrödinger Equation**: Visualize quantum wave functions and probability densities
+- **Manual/Custom Visualization**: Create custom image patterns and visualizations
 - **Video Generation**: Create smooth animated transitions between different views with easing
 - **Configurable Parameters**: Extensive customization options for colors, zoom, positioning, and more
 - **High Performance**: Written in Rust for maximum speed and memory efficiency
@@ -52,6 +53,12 @@ Generate a Schrödinger equation visualization:
 ./mathillu --function schrodinger --output-path schrodinger.png
 ```
 
+Generate a custom manual visualization:
+
+```bash
+./mathillu --function manual --output-path manual.png
+```
+
 Create an animated video with smooth zoom:
 
 ```bash
@@ -75,6 +82,11 @@ Create an animated video with smooth zoom:
 #### Schrödinger equation visualization
 ```bash
 ./mathillu --function schrodinger --width 1200 --height 900 --zoom 1.5 --output-path quantum_wave.png
+```
+
+#### Manual/custom visualization
+```bash
+./mathillu --function manual --width 800 --height 600 --output-path custom_visualization.png
 ```
 
 ### Video Generation
@@ -125,7 +137,7 @@ Load parameters from a config file:
 | `--center-x` | | 0.0 | X center offset in pixels from image center |
 | `--center-y` | | 0.0 | Y center offset in pixels from image center |
 | `--zoom` | | 1.0 | Zoom level (higher = more zoomed in) |
-| `--function` | | mandelbrot | Function to generate: 'mandelbrot' or 'schrodinger' |
+| `--function` | | mandelbrot | Function to generate: 'mandelbrot', 'schrodinger', or 'manual' |
 | `--end-center-x` | | | End X coordinate for video transition |
 | `--end-center-y` | | | End Y coordinate for video transition |
 | `--end-zoom` | | | End zoom level for video transition |

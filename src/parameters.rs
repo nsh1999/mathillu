@@ -87,7 +87,7 @@ pub struct Args {
     #[clap(long, default_value = "20.0")]
     pub zoom_font_size: f32,
 
-    /// Function to generate: 'mandelbrot' or 'schrodinger'.
+    /// Function to generate: 'mandelbrot', 'schrodinger', or 'manual'.
     #[clap(long, default_value = "mandelbrot")]
     pub function: String,
 }
