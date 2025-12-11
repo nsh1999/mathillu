@@ -9,7 +9,7 @@ A high-performance Rust application for generating stunning mathematical visuali
 
 - **Mandelbrot Set Visualization**: Generate intricate fractal images with customizable parameters
 - **Schrödinger Equation**: Visualize quantum wave functions and probability densities
-- **Video Generation**: Create smooth animated transitions between different views
+- **Video Generation**: Create smooth animated transitions between different views with easing
 - **Configurable Parameters**: Extensive customization options for colors, zoom, positioning, and more
 - **High Performance**: Written in Rust for maximum speed and memory efficiency
 - **Config File Support**: Save and load parameter configurations
@@ -69,7 +69,7 @@ Create an animated video with smooth zoom:
 
 #### Custom color scheme and positioning
 ```bash
-./mathillu --center-x -0.75 --center-y 0.1 --zoom 2.0 --bands 32 --output-path custom_mandelbrot.png
+./mathillu --center-x 200 --center-y -100 --zoom 2.0 --bands 32 --output-path custom_mandelbrot.png
 ```
 
 #### Schrödinger equation visualization
@@ -81,8 +81,8 @@ Create an animated video with smooth zoom:
 
 #### Smooth zoom animation
 ```bash
-./mathillu --center-x -0.5 --center-y 0.0 --zoom 1.0 \
-          --end-center-x -0.75 --end-center-y 0.1 --end-zoom 100.0 \
+./mathillu --center-x 0 --center-y 0 --zoom 1.0 \
+          --end-center-x 300 --end-center-y -200 --end-zoom 100.0 \
           --duration 15.0 --fps 60.0 \
           --output-path mandelbrot_zoom.mp4
 ```
@@ -90,10 +90,12 @@ Create an animated video with smooth zoom:
 #### Position and zoom transition
 ```bash
 ./mathillu --function schrodinger \
-          --center-x 0.0 --center-y 0.0 --zoom 1.0 \
-          --end-center-x 1.0 --end-center-y 0.5 --end-zoom 3.0 \
+          --center-x 0 --center-y 0 --zoom 1.0 \
+          --end-center-x 200 --end-center-y 150 --end-zoom 3.0 \
           --output-path quantum_transition.mp4
 ```
+
+**Note:** Video transitions use smooth easing (smoothstep) for natural-looking animations. Center movements and zoom changes accelerate smoothly through the middle of the transition and decelerate at the start and end.
 
 ### Configuration Files
 
@@ -120,8 +122,8 @@ Load parameters from a config file:
 | `--output-path` | `-o` | Required | Path to save the generated image/video |
 | `--config` | | | Path to config file to load parameters from |
 | `--bands` | `-b` | 16 | Number of color bands for coloring |
-| `--center-x` | | -0.5 | X coordinate of the center |
-| `--center-y` | | 0.0 | Y coordinate of the center |
+| `--center-x` | | 0.0 | X center offset in pixels from image center |
+| `--center-y` | | 0.0 | Y center offset in pixels from image center |
 | `--zoom` | | 1.0 | Zoom level (higher = more zoomed in) |
 | `--function` | | mandelbrot | Function to generate: 'mandelbrot' or 'schrodinger' |
 | `--end-center-x` | | | End X coordinate for video transition |
@@ -184,6 +186,13 @@ The test suite includes:
 - File I/O operations
 
 ## 📊 Mathematical Background
+
+### Coordinate System
+The application uses a pixel-based coordinate system where:
+- `center_x = 0`, `center_y = 0` centers the view at (0,0) in the complex plane
+- Positive `center_x` shifts the view right, negative shifts left
+- Positive `center_y` shifts the view down, negative shifts up
+- Values are in pixel units relative to the image center
 
 ### Mandelbrot Set
 The Mandelbrot set is a fractal defined by the equation:
