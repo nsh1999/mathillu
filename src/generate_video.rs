@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::Write;
 use std::process::Command;
+use std::path::Path;
 
 use crate::generate_mandelbrot;
 use crate::generate_schrodinger;
@@ -23,20 +24,23 @@ pub fn generate_video(args: &crate::parameters::Args, output_path: &str) {
     let mut log_entries = Vec::new();
     for i in 0..total_frames {
         let t = if total_frames > 1 { i as f64 / (total_frames - 1) as f64 } else { 0.0 };
-        let cx = args.center_x + (end_cx - args.center_x) * t;
-        let cy = args.center_y + (end_cy - args.center_y) * t;
+        // Apply smoothstep easing for smoother transitions
+        let smooth_t = 3.0 * t * t - 2.0 * t * t * t;
+        let cx = args.center_x + (end_cx - args.center_x) * smooth_t;
+        let cy = args.center_y + (end_cy - args.center_y) * smooth_t;
         let z = if args.zoom > 0.0 && end_z > 0.0 {
             let log_start = args.zoom.ln();
             let log_end = end_z.ln();
-            let log_z = log_start + (log_end - log_start) * t;
+            let log_z = log_start + (log_end - log_start) * smooth_t;
             log_z.exp()
         } else {
-            args.zoom + (end_z - args.zoom) * t
+            args.zoom + (end_z - args.zoom) * smooth_t
         };
-        let frame_path = format!("{}/{}_frame_{:04}.png", args.frames_dir, output_path, i);
+        let output_basename = Path::new(output_path).file_name().unwrap_or_else(|| std::ffi::OsStr::new("video")).to_string_lossy();
+        let frame_path = format!("{}/{}_frame_{:04}.png", args.frames_dir, output_basename, i);
         match args.function.as_str() {
-            "mandelbrot" => generate_mandelbrot::generate_mandelbrot(args.width, args.height, args.max_iterations, args.bands, cx, cy, z, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &frame_path),
-            "schrodinger" => generate_schrodinger::generate_schrodinger(args.width, args.height, args.bands, cx, cy, z, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &frame_path),
+            "mandelbrot" => generate_mandelbrot::generate_mandelbrot(args.width, args.height, args.max_iterations, args.bands, cx, cy, z, args.m_size, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &frame_path),
+            "schrodinger" => generate_schrodinger::generate_schrodinger(args.width, args.height, args.bands, cx, cy, z, args.m_size, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &frame_path),
             _ => panic!("Unknown function: {}", args.function),
         }
         let time = i as f64 / args.fps;
@@ -55,22 +59,23 @@ pub fn generate_video(args: &crate::parameters::Args, output_path: &str) {
 
     // Create video with ffmpeg
     let video_path = format!("{}.mp4", output_path);
+    let output_basename = Path::new(output_path).file_name().unwrap_or_else(|| std::ffi::OsStr::new("video")).to_string_lossy();
     if let Ok(status) = Command::new("ffmpeg")
-        .args(&["-y", "-r", &args.fps.to_string(), "-i", &format!("{}/{}_frame_%04d.png", args.frames_dir, output_path), "-c:v", "libx264", "-pix_fmt", "yuv420p", &video_path])
+        .args(&["-y", "-r", &args.fps.to_string(), "-i", &format!("{}/{}_frame_%04d.png", args.frames_dir, output_basename), "-c:v", "libx264", "-pix_fmt", "yuv420p", &video_path])
         .status()
     {
         if status.success() {
             println!("Video created: {}", video_path);
             // Clean up frames
             for i in 0..total_frames {
-                let frame_path = format!("{}/{}_frame_{:04}.png", args.frames_dir, output_path, i);
+                let frame_path = format!("{}/{}_frame_{:04}.png", args.frames_dir, output_basename, i);
                 std::fs::remove_file(&frame_path).ok();
             }
         } else {
             eprintln!("ffmpeg failed to create video");
         }
     } else {
-        println!("ffmpeg not found. Frames generated in {}/{}_frame_*.png. Run ffmpeg manually to create video.", args.frames_dir, output_path);
+        println!("ffmpeg not found. Frames generated in {}/{}_frame_*.png. Run ffmpeg manually to create video.", args.frames_dir, output_basename);
     }
 }
 
@@ -148,6 +153,8 @@ mod tests {
             center_x: 1.0,
             center_y: 2.0,
             zoom: 3.0,
+            m_size: 10.0,
+            grid_input: None,
             end_center_x: None,
             end_center_y: None,
             end_zoom: None,
@@ -183,6 +190,8 @@ mod tests {
             center_x: 1.0,
             center_y: 2.0,
             zoom: 3.0,
+            m_size: 10.0,
+            grid_input: Some("grid_input.png".to_string()),
             end_center_x: Some(4.0),
             end_center_y: Some(5.0),
             end_zoom: Some(6.0),

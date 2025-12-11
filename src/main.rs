@@ -14,8 +14,19 @@ fn main() {
         generate_video::generate_video(&args, &output_path);
     } else {
         match args.function.as_str() {
-            "mandelbrot" => generate_mandelbrot::generate_mandelbrot(args.width, args.height, args.max_iterations, args.bands, args.center_x, args.center_y, args.zoom, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &output_path),
-            "schrodinger" => generate_schrodinger::generate_schrodinger(args.width, args.height, args.bands, args.center_x, args.center_y, args.zoom, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &output_path),
+            "mandelbrot" => generate_mandelbrot::generate_mandelbrot(args.width, args.height, args.max_iterations, args.bands, args.center_x, args.center_y, args.zoom, args.m_size, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &output_path),
+            "schrodinger" => generate_schrodinger::generate_schrodinger(args.width, args.height, args.bands, args.center_x, args.center_y, args.zoom, args.m_size, &args.font_path, args.zoom_text_x, args.zoom_text_y, args.zoom_font_size, &output_path),
+            "grid" => {
+                if let Some(grid_input) = &args.grid_input {
+                    generate_mandelbrot::add_grid_to_image(grid_input).unwrap_or_else(|e| {
+                        eprintln!("Failed to add grid: {}", e);
+                        std::process::exit(1);
+                    });
+                } else {
+                    eprintln!("Grid function requires --grid-input parameter");
+                    std::process::exit(1);
+                }
+            }
             _ => panic!("Unknown function: {}", args.function),
         }
     }

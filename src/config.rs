@@ -1,5 +1,6 @@
 use std::path::Path;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Configuration structure for saving/loading parameters.
 #[derive(Serialize, Deserialize)]
@@ -12,6 +13,8 @@ pub struct Config {
     pub center_x: f64,
     pub center_y: f64,
     pub zoom: f64,
+    pub m_size: f64,
+    pub grid_input: Option<String>,
     pub end_center_x: Option<f64>,
     pub end_center_y: Option<f64>,
     pub end_zoom: Option<f64>,
@@ -23,39 +26,51 @@ pub struct Config {
     pub zoom_text_y: i32,
     pub zoom_font_size: f32,
     pub function: String,
+    #[serde(flatten)]
+    pub extra: std::collections::HashMap<String, toml::Value>,
 }
 
 pub fn load_config(args: &mut crate::parameters::Args, config_path: Option<String>) {
     if let Some(config_path) = config_path {
-        if let Ok(config_content) = std::fs::read_to_string(&config_path) {
-            if let Ok(config) = toml::from_str::<Config>(&config_content) {
-                // When config is provided, use only config values, ignore command line
-                args.width = config.width;
-                args.height = config.height;
-                args.max_iterations = config.max_iterations;
-                args.output_path = Some(config.output_path);
-                args.bands = config.bands;
-                args.center_x = config.center_x;
-                args.center_y = config.center_y;
-                args.zoom = config.zoom;
-                args.end_center_x = config.end_center_x;
-                args.end_center_y = config.end_center_y;
-                args.end_zoom = config.end_zoom;
-                args.fps = config.fps;
-                args.duration = config.duration;
-                args.frames_dir = config.frames_dir;
-                args.font_path = config.font_path;
-                args.zoom_text_x = config.zoom_text_x;
-                args.zoom_text_y = config.zoom_text_y;
-                args.zoom_font_size = config.zoom_font_size;
-                args.function = config.function;
-            } else {
-                eprintln!("Failed to parse config file: {}", config_path);
+        match std::fs::read_to_string(&config_path) {
+            Ok(config_content) => {
+                match toml::from_str::<Config>(&config_content) {
+                    Ok(config) => {
+                        // When config is provided, use only config values, ignore command line
+                        args.width = config.width;
+                        args.height = config.height;
+                        args.max_iterations = config.max_iterations;
+                        args.output_path = Some(config.output_path);
+                        args.bands = config.bands;
+                        args.center_x = config.center_x;
+                        args.center_y = config.center_y;
+                        args.zoom = config.zoom;
+                        args.m_size = config.m_size;
+                        args.grid_input = config.grid_input;
+                        args.end_center_x = config.end_center_x;
+                        args.end_center_y = config.end_center_y;
+                        args.end_zoom = config.end_zoom;
+                        args.fps = config.fps;
+                        args.duration = config.duration;
+                        args.frames_dir = config.frames_dir;
+                        args.font_path = config.font_path;
+                        args.zoom_text_x = config.zoom_text_x;
+                        args.zoom_text_y = config.zoom_text_y;
+                        args.zoom_font_size = config.zoom_font_size;
+                        args.function = config.function;
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to parse config file '{}': {}", config_path, e);
+                        eprintln!("Please check that all fields are valid and properly formatted.");
+                        eprintln!("Expected fields: width, height, max_iterations, output_path, bands, center_x, center_y, zoom, m_size, grid_input, end_center_x, end_center_y, end_zoom, fps, duration, frames_dir, font_path, zoom_text_x, zoom_text_y, zoom_font_size, function");
+                        std::process::exit(1);
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("Failed to read config file '{}': {}", config_path, e);
                 std::process::exit(1);
             }
-        } else {
-            eprintln!("Failed to read config file: {}", config_path);
-            std::process::exit(1);
         }
     }
 }
@@ -72,6 +87,8 @@ pub fn save_config(args: &crate::parameters::Args, output_path: &str) {
             center_x: args.center_x,
             center_y: args.center_y,
             zoom: args.zoom,
+            m_size: args.m_size,
+            grid_input: args.grid_input.clone(),
             end_center_x: args.end_center_x,
             end_center_y: args.end_center_y,
             end_zoom: args.end_zoom,
@@ -83,6 +100,7 @@ pub fn save_config(args: &crate::parameters::Args, output_path: &str) {
             zoom_text_y: args.zoom_text_y,
             zoom_font_size: args.zoom_font_size,
             function: args.function.clone(),
+            extra: HashMap::new(),
         };
         let config_toml = toml::to_string(&config).unwrap();
         let config_path = Path::new(&output_path).with_extension("conf").to_string_lossy().to_string();
@@ -111,6 +129,8 @@ mod tests {
             center_x: -0.5,
             center_y: 0.0,
             zoom: 1.0,
+            m_size: 10.0,
+            grid_input: Some("grid.png".to_string()),
             end_center_x: Some(-0.7),
             end_center_y: Some(0.1),
             end_zoom: Some(2.0),
@@ -122,6 +142,7 @@ mod tests {
             zoom_text_y: 110,
             zoom_font_size: 20.0,
             function: "mandelbrot".to_string(),
+            extra: HashMap::new(),
         };
 
         let toml_string = toml::to_string(&config).unwrap();
@@ -159,6 +180,7 @@ bands = 32
 center_x = -0.75
 center_y = 0.1
 zoom = 2.0
+m_size = 20.0
 end_center_x = -0.8
 end_center_y = 0.2
 end_zoom = 4.0
@@ -185,6 +207,8 @@ function = "schrodinger"
             center_x: -0.5,
             center_y: 0.0,
             zoom: 1.0,
+            m_size: 10.0,
+            grid_input: None,
             end_center_x: None,
             end_center_y: None,
             end_zoom: None,
@@ -235,6 +259,8 @@ function = "schrodinger"
             center_x: -0.6,
             center_y: 0.05,
             zoom: 1.5,
+            m_size: 15.0,
+            grid_input: None,
             end_center_x: Some(-0.65),
             end_center_y: Some(0.1),
             end_zoom: Some(3.0),
@@ -292,6 +318,8 @@ function = "schrodinger"
             center_x: -0.5,
             center_y: 0.0,
             zoom: 1.0,
+            m_size: 10.0,
+            grid_input: None,
             end_center_x: None,
             end_center_y: None,
             end_zoom: None,

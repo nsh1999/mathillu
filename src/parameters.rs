@@ -23,21 +23,29 @@ pub struct Args {
     #[clap(long)]
     pub config: Option<String>,
 
+    /// Path to input image for grid function.
+    #[clap(long)]
+    pub grid_input: Option<String>,
+
     /// Number of color bands for the iteration-based coloring.
     #[clap(short, long, default_value = "16")]
     pub bands: u32,
 
-    /// X coordinate of the center of the Mandelbrot set.
-    #[clap(long, default_value = "-0.5")]
+    /// X coordinate of the center (pixel offset from base center).
+    #[clap(long, default_value = "0.0")]
     pub center_x: f64,
 
-    /// Y coordinate of the center of the Mandelbrot set.
+    /// Y coordinate of the center (pixel offset from base center).
     #[clap(long, default_value = "0.0")]
     pub center_y: f64,
 
     /// Zoom level (1.0 = default, higher values zoom in).
     #[clap(long, default_value = "1.0")]
     pub zoom: f64,
+
+    /// Size of the mathematical space (square, affects coordinate range).
+    #[clap(long, default_value = "10.0")]
+    pub m_size: f64,
 
     /// End X coordinate for video transition.
     #[clap(long)]
@@ -92,12 +100,16 @@ pub fn prepare_parameters() -> (Args, String) {
     let config_path = args.config.clone();
     crate::config::load_config(&mut args, config_path);
 
-    // Ensure output_path is set
-    let output_path = match args.output_path {
-        Some(p) => p,
-        None => {
-            eprintln!("output_path is required");
-            std::process::exit(1);
+    // Ensure output_path is set (except for grid function)
+    let output_path = if args.function == "grid" {
+        "dummy".to_string() // not used
+    } else {
+        match args.output_path {
+            Some(p) => p,
+            None => {
+                eprintln!("output_path is required");
+                std::process::exit(1);
+            }
         }
     };
     args.output_path = Some(output_path.clone()); // for consistency, but not needed
@@ -121,6 +133,8 @@ mod tests {
             center_x: -0.5,
             center_y: 0.0,
             zoom: 1.0,
+            m_size: 10.0,
+            grid_input: None,
             end_center_x: None,
             end_center_y: None,
             end_zoom: None,
@@ -168,6 +182,8 @@ mod tests {
             center_x: -0.75,
             center_y: 0.1,
             zoom: 2.0,
+            m_size: 20.0,
+            grid_input: Some("input.png".to_string()),
             end_center_x: Some(-0.8),
             end_center_y: Some(0.2),
             end_zoom: Some(4.0),
